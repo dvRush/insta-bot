@@ -3,6 +3,12 @@ version: '3'
 services:
   web:
     build: .
-    command: ruby app.rb
+    environment:
+      - BUNDLE_PATH=/bundle
     volumes:
+      - bundle_path:/bundle
       - .:/app
+    command: bundle exec ruby app.rb
+
+volumes:
+  bundle_path:
