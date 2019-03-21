@@ -25,7 +25,7 @@ end
 class InstaBot
   include Capybara::DSL
 
-  NSTAGRAM_ROOT_URL = 'https://www.instagram.com'.freeze
+  INSTAGRAM_ROOT_URL = 'https://www.instagram.com'.freeze
 
   attr_reader :login, :password
 
@@ -52,6 +52,35 @@ class InstaBot
     click_button 'Log in'
   end
 
+  def fetch_post_image(post_path)
+    visit INSTAGRAM_ROOT_URL + post_path
+
+    @image_url = Nokogiri::HTML.
+      parse(page.body).
+      xpath(".//main//article/div//img[@srcset]").
+      attr('src').
+      value
+
+    File.open("image_post_#{post_path.to_s.gsub('/', '_')}.jpg", 'wb+') do |f|
+      f.write open(@image_url).read
+    end
+  end
+
+  def fetch_post_comments(post_path)
+    visit INSTAGRAM_ROOT_URL + post_path
+
+    loop do
+      click_on 'Load more comments'
+      sleep 1
+    rescue Capybara::ElementNotFound
+      break
+    end
+
+    @comments = Nokogiri::HTML.
+      parse(page.body).
+      xpath("//li[@role='menuitem'][position()>1]").map do |n_comment|
+        n_comment.xpath("./div/div/div").children.map(&:text)
+      end
   end
 
   def save_screenshot(filename='./ss.png')
