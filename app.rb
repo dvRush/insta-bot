@@ -25,15 +25,40 @@ end
 class InstaBot
   include Capybara::DSL
 
-  def start
-    visit 'http://example.com'
+  NSTAGRAM_ROOT_URL = 'https://www.instagram.com'.freeze
 
-    page.driver.save_screenshot('./ss.png')
+  attr_reader :login, :password
+
+  def initialize(login, password)
+    @login = login
+    @password = password
   end
 
-  def self.start
-    new.start
+  def start
+    # TODO
+  end
+
+  def sign_in
+    visit INSTAGRAM_ROOT_URL
+
+    click_on 'Log in'
+
+    sleep 2
+    fill_in 'Phone number, username, or email', with: login
+    sleep 2
+    fill_in 'Password', with: password
+    sleep 2
+
+    click_button 'Log in'
+  end
+
+  end
+
+  def save_screenshot(filename='./ss.png')
+    page.driver.save_screenshot(filename)
+  end
+
+  def self.start(login:, password:)
+    new(login, password).start
   end
 end
-
-MyDriver.start
